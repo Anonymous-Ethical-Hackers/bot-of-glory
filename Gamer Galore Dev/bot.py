@@ -130,7 +130,7 @@ async def menukick(interaction: discord.Interaction, member: discord.Member):
 
 
 
-
+#Anything below here is in testing. and the command has been command has been commented out _______________________________________________________________________
 #/test Modal
 
 #class modal(discord.ui.Modal, title="Test modal"):
@@ -169,6 +169,9 @@ class TestMenuButton(discord.ui.View):
 #@client.tree.command(name="buttonmenu-test")
 #async def buttonmenu(interaction: discord.Interaction):
     #await interaction.response.send_message(content="here's my button menu", view=TestMenuButton())
+    
+    
+#Now Any thing Below this line Not in testing and works__________________________________________________________________________
 
 
 #/vote
