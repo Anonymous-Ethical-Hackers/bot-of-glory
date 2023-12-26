@@ -23,22 +23,53 @@ codeOwner = "GamerGalore"
 #bot prefix(!)
 client = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 
-
-#start indicator
 @client.event
 async def on_ready():
-    await client.tree.sync()
-    asyncio.create_task(bankfee())
-    db = sqlite3.connect("main.sqlite")
-    cursor = db.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS eco (user_name STRING, user_id INTEGER, balance INTEGER, deposited INTERGER, bankrupt STRING, deposit_limit INTEGER)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS bank (user_name STRING, user_id INTERGER)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS welcome_settings (guild_id INTEGER , Channel TEXT, Message TEXT, AutoRole TEXT, ImageURL TEXT)''')
-    db.commit()
-    db.close()
-    print("Successfully Made Database!!")
-    print(f"Success!!: we have login as {client.user}.")
-    await client.change_presence(activity=discord.Game("Developed by Gamer Galore"))
+    try:
+        await client.tree.sync()
+
+        # Start bankfee() as a task
+        print('starting bankfee loop...')
+        asyncio.create_task(bankfee())
+        sleep(2)
+        print("bankfee loop running!")
+
+        # Database setup
+        print("Setting up databases.")
+        sleep(1)
+        print("Setting up databases..")
+        sleep(1)
+        print("Setting up databases...")
+        sleep(1)
+        print("Setting up databases.")
+        sleep(1)
+        print("Setting up databases..")
+        sleep(1)
+        print("Setting up databases...")
+        db = sqlite3.connect("main.sqlite")
+        cursor = db.cursor()
+
+        cursor.execute('''CREATE TABLE IF NOT EXISTS eco (user_name STRING, user_id INTEGER, balance INTEGER, deposited INTEGER, bankrupt STRING, deposit_limit INTEGER)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS bank (user_name STRING, user_id INTEGER)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS welcome_settings (guild_id INTEGER, channel TEXT, Message TEXT, ImageURL TEXT)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS shop_items (item_id INTEGER PRIMARY KEY AUTOINCREMENT, item_name TEXT, item_description TEXT, item_price INTEGER, command_name
+        )''')
+
+        db.commit()
+        db.close()
+
+        print("Successfully made the database and tables.")
+        sleep(0.5)
+        print(f"Success!! We have logged in as {client.user}.")
+        await client.change_presence(activity=discord.Game("Developed by Gamer Galore"))
+
+    except Exception as e:
+        print(f"Error during setup: {e}")
+        sleep(0.2)
+        exit
+
+
+
 
 #removes premade help command
 @client.remove_command("help")
@@ -149,7 +180,7 @@ async def balance(ctx, member: discord.Member=None):
     db.close()
 
 #beg
-#@commands.cooldown(666, 600, commands.BucketType.user)
+@commands.cooldown(4, 60, commands.BucketType.user)
 @client.hybrid_command(name="beg", description="You beg for money. but you may loss money instead.")
 async def beg(ctx):
 
@@ -182,7 +213,7 @@ async def beg(ctx):
         no_beg_embed = discord.Embed(title="🏦 Sorry you are bankrupted", description="Try and withdrawing some money or get MOD to reset you.", color=discord.Color.red())
         return await ctx.send(embed=no_beg_embed)    
     
-    amount = max(random.choice(list(range(-70, 1))), -70)  # Limit amount to -70
+    amount = random.choice(list(range(-10, 100)))  # Limit amount to 100
 
     sql = (f"UPDATE eco SET balance=? WHERE user_id=?")
     new_bal = (user_bal + int(amount))
@@ -230,7 +261,7 @@ async def beg(ctx):
 
 
 #work
-@commands.cooldown(1, 86400, commands.BucketType.user)
+@commands.cooldown(1, 1800, commands.BucketType.user)
 @client.hybrid_command(name="work", description="work some some hard earn money!")
 async def work(ctx):    
     db = sqlite3.connect("main.sqlite")
@@ -277,7 +308,7 @@ async def work(ctx):
     db.close()
 
 #steal
-@commands.cooldown(33, 3600, commands.BucketType.user)
+@commands.cooldown(3, 3600, commands.BucketType.user)
 @client.hybrid_command(name="steal", description="steal from your fellow server mates. But be wary!")
 async def steal(ctx, member: discord.Member):
 
@@ -493,24 +524,6 @@ async def resetbank(ctx, member: discord.Member, current_bal: int):
     await ctx.send("Reset successful!")
 
 
-
-
-    #gamer of glory shop
-
-# ... (other parts of your code)
-
-# Start indicator and initialization
-@client.event
-async def on_ready():
-    await client.tree.sync()
-    asyncio.create_task(bankfee())
-    db = sqlite3.connect("main.sqlite")
-    cursor = db.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS eco (user_name STRING, user_id INTEGER, balance INTEGER, deposited INTEGER, bankrupt STRING, deposit_limit INTEGER)''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS bank (user_name STRING, user_id INTEGER)''')
-    print(f"Success!!: we have logged in as {client.user}.")
-    await client.change_presence(activity=discord.Game("Developed by Gamer Galore"))
-
 # Deposit fee
 async def bankfee():
     while True:
@@ -535,10 +548,10 @@ async def bankfee():
                 cb_value = user_bal
 
                 if user_dp > user_dp_limit:
-                    while cb_value > -100 and cb_value >= (user_bal - 5):
-                        cb_value -= 5
+                    while cb_value > -100 and cb_value >= (user_bal - 10):
+                        cb_value -= 10
                         # DM the user every time $5 is taken
-                        dp_limit_embed = discord.Embed(title="⚠️ Deposit Limit Breach ⚠️", description="Your current balance has been deducted by $5", color=discord.Color.red())
+                        dp_limit_embed = discord.Embed(title="⚠️ Deposit Limit Breach ⚠️", description="Your current balance has been deducted by $10", color=discord.Color.red())
                         dp_limit_embed.add_field(name="Because your deposited money is greater than your deposit limit", value="Try withdrawing some funds", inline=False)
                         dp_limit_embed.add_field(name="You can increase your deposit limit by using", value="=shop dp_limit", inline=False)
                         dp_limit_embed.add_field(name="Your current deposit limit is", value=user_dp_limit, inline=False)
@@ -561,102 +574,88 @@ async def bankfee():
             db.commit()
 
         db.close()
-        await asyncio.sleep(5)  # Sleep for 24 hours before checking again
+        await asyncio.sleep(60)  # Sleep for 1min hours before checking again
 
-#shop
-@client.group(name="shop", invoke_without_command=True)
+#shop of glory
+
+#add shop item
+@client.hybrid_command(name="add_shop_item", description="Add an item to the shop")
+@commands.has_permissions(administrator=True)
+async def add_shop_item(ctx, item_name: str, item_description: str, item_price: int, command_name: str):
+    try:
+        db = sqlite3.connect("main.sqlite")
+        cursor = db.cursor()
+        cursor.execute('''INSERT INTO shop_items (item_name, item_description, item_price, command_name)
+            VALUES (?, ?, ?, ?)''', (item_name, item_description, item_price, command_name))
+        db.commit()
+        db.close()
+        await ctx.send("Item added to the shop successfully!")
+    except sqlite3.Error as e:
+        await ctx.send(f"An error occurred while adding the item: {e}")
+
+#show shop
+@client.hybrid_command(name="shop", description="Display items available in the shop")
 async def shop(ctx):
-    shop_embed = discord.Embed(title="Bot of Glory Shop", description="All the available items to shop for", colour=discord.Color.brand_green())
-    shop_embed.add_field(name="Exclusive role (=shop ex_role ROLE_NAME)", value="$15,000")
-    await ctx.send(embed=shop_embed)
+    try:
+        db = sqlite3.connect("main.sqlite")
+        cursor = db.cursor()
+        cursor.execute('''SELECT item_name, item_description, item_price FROM shop_items''')
+        items = cursor.fetchall()
+        db.close()
 
-#custom shop role
-@shop.command()
-async def ex_role(ctx, *, role_name: str):
-    with open("db/json/eco.json", "r") as f:
-        user_eco = json.load(f)
-    with open("db/json/bank.json", "r")as f:
-        bank = json.load(f)
+        if items:
+            shop_embed = discord.Embed(title="Shop Items", color=discord.Color.blurple())
+            for item in items:
+                shop_embed.add_field(name=item[0], value=f"Description: {item[1]}\nPrice: ${item[2]}\n Command: =buy_dp_limit", inline=False)
+            await ctx.send(embed=shop_embed)
+        else:
+            await ctx.send("No items available in the shop.")
+    except sqlite3.Error as e:
+        await ctx.send(f"An error occurred while fetching shop items: {e}")
 
-    if str(ctx.author.id) in bank:
-        no_beg_embed = discord.Embed(title="🏦Sorry you are bankrupted", description="Try and withdrawing some money or get gamer galore to reset you.", color=discord.Color.red())
-        return ctx.send(embed=no_beg_embed)        
+@client.hybrid_command(name="buy_dp_limit")
+async def buy_dp_limit(ctx):
+    db = sqlite3.connect("main.sqlite")
+    cursor = db.cursor()
 
-    if str(ctx.author.id) not in user_eco:
+    cursor.execute("SELECT item_price FROM shop_items WHERE item_name = ?", ("Deposit Limit",))
+    price = cursor.fetchone()
 
-        user_eco[str(ctx.author.id)] = {}
-        user_eco[str(ctx.author.id)]["Balance"] = 100
-        user_eco[str(ctx.author.id)]["Deposited"] = 0
-        user_eco[str(ctx.author.id)]["Bankrupt"] = "Not Bankrupt"
-        user_eco[str(ctx.author.id)]["Deposit Limit"] = 100
+    if not price:
+        await ctx.send("The price for this item is not available.")
+        db.close()
+        return
 
-        with open("db/json/eco.json", "w") as f:
-            json.dump(user_eco, f, indent=4)
+    price = price[0]
 
-    if user_eco[str(ctx.author.id)]["Balance"] < 15000:
-        depo = user_eco[str(ctx.author.id)]["Deposited"]
-        noBuy_embed = discord.Embed(title="💵 Sorry you do not have enough current balance", description="Try withdrawing some money out of your deposited.")
-        noBuy_embed.add_field(name="Deposited", value=depo, inline=False)
-        await ctx.send(embed=noBuy_embed)
+    # Fetch user's balance from the eco table
+    cursor.execute("SELECT balance FROM eco WHERE user_id = ?", (ctx.author.id,))
+    user_balance = cursor.fetchone()
 
+    if not user_balance:
+        await ctx.send("You need to create an account first.")
+        db.close()
+        return
 
-    elif user_eco[str(ctx.author.id)]["Balance"] >= 15000:
-        user_eco[str(ctx.author.id)]["Balance"] -= 15000
-        with open("db/json/eco.json", "w") as f:
-            json.dump(user_eco, f, indent=4)
-        
-        guild = ctx.guild
-        role = await guild.create_role(name=role_name)
-        await ctx.author.add_roles(role)
-        await ctx.send(f"Role '{role_name}' created successfully and assigned to {ctx.author.mention}.")
+    user_balance = user_balance[0]
 
-#deposit limit extend shop item
-@shop.command()
-async def dp_limit(ctx):
-    with open("db/json/eco.json", "r") as f:
-        user_eco = json.load(f)
-    with open("db/json/bank.json", "r")as f:
-        bank = json.load(f)
+    if user_balance < price:
+        await ctx.send("Insufficient balance.")
+        db.close()
+        return
 
-    if str(ctx.author.id) in bank:
-        no_beg_embed = discord.Embed(title="🏦Sorry you are bankrupted", description="Try and withdrawing some money or get gamer galore to reset you.", color=discord.Color.red())
-        return ctx.send(embed=no_beg_embed)        
+    # Deduct the price from the user's balance
+    new_balance = user_balance - price
+    cursor.execute("UPDATE eco SET balance = ? WHERE user_id = ?", (new_balance, ctx.author.id))
 
-    if str(ctx.author.id) not in user_eco:
+    # Increase deposit limit by 50
+    cursor.execute("UPDATE eco SET deposit_limit = deposit_limit + 50 WHERE user_id = ?", (ctx.author.id,))
 
-        user_eco[str(ctx.author.id)] = {}
-        user_eco[str(ctx.author.id)]["Balance"] = 100
-        user_eco[str(ctx.author.id)]["Deposited"] = 0
-        user_eco[str(ctx.author.id)]["Bankrupt"] = "Not Bankrupt"
-        user_eco[str(ctx.author.id)]["Deposit Limit"] = 100
-
-        with open("db/json/eco.json", "w") as f:
-            json.dump(user_eco, f, indent=4)
-
-    if user_eco[str(ctx.author.id)]["Balance"] < 1000:
-        depo = user_eco[str(ctx.author.id)]["Deposited"]
-        noBuy_embed = discord.Embed(title="💵 Sorry you do not have enough current balance", description="Try withdrawing some money out of your deposited.")
-        noBuy_embed.add_field(name="Deposited", value=depo, inline=False)
-        await ctx.send(embed=noBuy_embed)
+    await ctx.send("Deposit Limit Extension purchased successfully!")
+    db.commit()
+    db.close()
 
 
-    elif user_eco[str(ctx.author.id)]["Balance"] >= 1000:
-        user_eco[str(ctx.author.id)]["Balance"] -= 1000
-        with open("db/json/eco.json", "w") as f:
-            json.dump(user_eco, f, indent=4)
-        
-        user_eco[str(ctx.author.id)]["Deposit Limit"] += 50
-
-        with open("db/json/eco.json", "w") as f:
-            json.dump(user_eco, f, indent=4)
-        user = await client.fetch_user(int(ctx.author.id))
-
-        dp_lim = user_eco[str(ctx.author.id)]["Deposit Limit"]
-
-        dp_limit_embed = discord.Embed(title="Thanks for buying with Bot of Glory", color=discord.Color.green())
-        dp_limit_embed.add_field(name=f"your deposit limit has increased to", value=f"${dp_lim}")
-
-        await user.send(embed=dp_limit_embed)
 
 #economy commands end__________________________________________________________
 #welcome commands______________________________________________________________
@@ -664,85 +663,77 @@ async def dp_limit(ctx):
 #sending the welcome message
 @client.event
 async def on_member_join(member):
-    with open("db/json/welcome.json", "r") as f:
-        data = json.load(f) 
+    try:
+        db = sqlite3.connect("main.sqlite")
+        cursor = db.cursor()
 
-    welcome_embed = discord.Embed(title=f"Welcome to {member.guild.name} {member.display_name}", description=f"You are the {member.guild.member_count} Member!", color=discord.Color.random())
+        cursor.execute('''SELECT channel, message, imageURL FROM welcome_settings WHERE guild_id = ?''', (member.guild.id,))
+        settings = cursor.fetchone()
 
-    welcome_embed.add_field(name=f"We all welcome you to our server!", value=data[str(member.guild.id)]["Message"], inline=False )
-    welcome_embed.set_thumbnail(url=member.guild.icon)
-    welcome_embed.set_image(url=data[str(member.guild.id)]["ImageUrl"])
-    welcome_embed.set_footer(text=f"Glad you joined!", icon_url=member.avatar)
+        if settings:
+            channel, message, imageURL = settings
+            welcome_channel = member.guild.get_channel(channel)
+            
+            if welcome_channel:
+                welcome_embed = discord.Embed(
+                    title=f"Welcome to {member.guild.name}, {member.display_name}!",
+                    description=message,
+                    color=discord.Color.green()
+                )
+                welcome_embed.set_thumbnail(url=member.guild.icon_url)
+                welcome_embed.set_image(url=imageURL)
+                welcome_embed.set_footer(text="Enjoy your stay!")
 
-    auto_role = discord.utils.get(member.guild.roles, name=data[str(member.guild.id)]["AutoRole"])
+                await welcome_channel.send(embed=welcome_embed)
+            else:
+                owner = member.guild.owner
+                await owner.send(f"Welcome channel is not set. Please configure welcome settings for the server.")
+    except sqlite3.Error as e:
+        print(f"Error retrieving welcome settings: {e}")
 
-    await member.add_roles(auto_role)
-
-    if data[str(member.guild.id)]["Channel"] is None:
-        await member.send(embed=welcome_embed)
-    elif data[str(member.guild.id)]["Channel"] is not None:
-
-        welcome_channel = discord.utils.get(member.guild.channels, name=data[str(member.guild.id)]["Channel"])
-
-        await welcome_channel.send(embed=welcome_embed)
-
-#welcome group
-@client.group(name="welcome", invoke_without_command=True)
+#welcome settings
+@client.hybrid_command(name="welcome_information")
 @commands.has_permissions(administrator=True)
-async def welcome(ctx):
+async def welcome_info(ctx):
     info_embed = discord.Embed(title="Welcome System Setup", description="Create a unique welcome system for your server", color=discord.Color.teal())
-    info_embed.add_field(name="auto role", value="Set automatic role so when a user joins they will receive it automatically.", inline=False)
-    info_embed.add_field(name="message", value="Set a message to be included in your welcome card.", inline=False)
     info_embed.add_field(name="channel", value="Set a channel for your welcome card to be sent in.", inline=False)
+    info_embed.add_field(name="message", value="Set a message to be included in your welcome card.", inline=False)
     info_embed.add_field(name="img", value="Set a image or gif url to be sent with the welcome card.", inline=False)
     await ctx.send(embed=info_embed)
 
-@welcome.command()
+@client.hybrid_command(name="welcome_config", description="Setup the welcome system for the server")
 @commands.has_permissions(administrator=True)
-async def autorole(ctx, role: discord.Role):
-    db = sqlite3.connect("main.sqlite")
-    cursor = db.cursor()
-    cursor.execute("INSERT OR REPLACE INTO welcome_settings (guild_id, AutoRole) VALUES (?, ?)", (ctx.guild.id, role.name))
-    db.commit()
-    db.close()
-    await ctx.send("Auto role set!")
+async def welcome_config(ctx, channel: discord.TextChannel, message: str, image_url: str):
+    print(f"Received parameters: {channel}, {message}, {image_url}")
 
-@welcome.command()
-@commands.has_permissions(administrator=True)
-async def message(ctx, *, msg):
-    db = sqlite3.connect("main.sqlite")
-    cursor = db.cursor()
-    cursor.execute("INSERT OR REPLACE INTO welcome_settings (guild_id, Message) VALUES (?, ?)", (ctx.guild.id, msg))
-    db.commit()
-    db.close()
-    await ctx.send("Welcome message set!")
+    if not (channel and message and image_url):
+        await ctx.send("Please provide the required arguments for setting up the welcome system.")
+        return
 
-@welcome.command()
-@commands.has_permissions(administrator=True)
-async def channel(ctx, channel: discord.TextChannel):
-    db = sqlite3.connect("main.sqlite")
-    cursor = db.cursor()
-    cursor.execute("INSERT OR REPLACE INTO welcome_settings (guild_id, Channel) VALUES (?, ?)", (ctx.guild.id, channel.name))
-    db.commit()
-    db.close()
-    await ctx.send("Welcome channel set!")
+    try:
+        db = sqlite3.connect("main.sqlite")
+        cursor = db.cursor()
 
-@welcome.command()
-@commands.has_permissions(administrator=True)
-async def img(ctx, *, url):
-    db = sqlite3.connect("main.sqlite")
-    cursor = db.cursor()
-    cursor.execute("INSERT OR REPLACE INTO welcome_settings (guild_id, ImageURL) VALUES (?, ?)", (ctx.guild.id, url))
-    db.commit()
-    db.close()
-    await ctx.send("Welcome image URL set!")
+        cursor.execute('''CREATE TABLE IF NOT EXISTS welcome_settings (
+            guild_id INTEGER,
+            channel INTEGER,
+            message TEXT,
+            imageURL TEXT
+        )''')
+
+        cursor.execute('''INSERT INTO welcome_settings (guild_id, channel, message, imageURL)
+            VALUES (?, ?, ?, ?)''', (ctx.guild.id, channel.id, message, image_url))
+
+        db.commit()
+        db.close()
+
+        await ctx.send("Welcome system configured successfully!")
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        await ctx.send(f"An error occurred while configuring the welcome system: {e}")
 
 
-#welcome commands end__________________________________________________________
 # main commands _______________________________________________________________
-
-
-#mute role
 
     
 #calculator
@@ -922,10 +913,10 @@ async def help(ctx):
 
     eco_cmd_embed = discord.Embed(title="Economy Commands (all slash and prefix)", description="Your current balance can be used to buy stuff. but it is vulnerable. So you store your funds in the bank. Any thing in [] is optional.", color=discord.Color.brand_green())
     eco_cmd_embed.add_field(name="Balance [@member]", value="This command lets you see yours or some else's balance")
-    eco_cmd_embed.add_field(name="Beg", value="This command gives you at random $-50 to $50. Can beg every 10mins")
-    eco_cmd_embed.add_field(name="Work", value="This command give you at random $60 to $300 for working hard. Can work every 5 days")
-    eco_cmd_embed.add_field(name="Steal @member", value="This command at random $1 to $100 from the chosen person. Can steal every 1hour")
-    eco_cmd_embed.add_field(name="Deposit amount", value="This command lets you deposit your money in to your bank, so it is safe from people stealing it. Max deposit at a time is 500. can deposit every 5mins")
+    eco_cmd_embed.add_field(name="Beg", value="This command gives you at random $-50 to $50.")
+    eco_cmd_embed.add_field(name="Work", value="This command give you at random $60 to $300 for working hard.")
+    eco_cmd_embed.add_field(name="Steal @member", value="This command at random $1 to $100 from the chosen person.")
+    eco_cmd_embed.add_field(name="Deposit amount", value="This command lets you deposit your money in to your bank, so it is safe from people stealing it. Max deposit at a time is 500.")
     eco_cmd_embed.add_field(name="Withdraw amount", value="This command lets you withdraw the money from your bank to current balance. So you can you the funds to buy stuff with")
     eco_cmd_embed.add_field(name="Need extra Help click here https://discord.gg/r6DhXRJpmm", value=None, inline=False)
 
