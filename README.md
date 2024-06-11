@@ -6,3 +6,5 @@ This is Gamer Galore's discord bot known as "Bot of Glory"
 this code will and may have issues and bugs 
 
 this code will not longer being updated as i am working on anther bot "Ethi"
+
+and the shop dose not work I suggest turning it in to a hybrid group instead
