@@ -1,10 +1,5 @@
-# Gamer-Galore(now ethical hacker)-Discord-Bot-Bot-of-Glory
-This is Gamer Galore's discord bot known as "Bot of Glory" 
-1. Make sure to have the lastest [python installed](https://www.python.org/downloads/)
-
-
-this code will and may have issues and bugs 
-
-this code will not longer being updated as i am working on anther bot "Ethi"
-
-and the shop dose not work I suggest turning it in to a hybrid group instead
+# Gamer-Galore(now Ethical Hacker)-Discord-Bot
+# Bot-of-Glory
+This code is Deprecated and now has been made better with a web interface and more with my new bot 'ethi'.
+Now this code is full of bugs! please use at your own risk!
+also the code for my new bot 'ethi' will be private untill further notice.
